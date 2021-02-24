@@ -3,14 +3,16 @@ from collections import defaultdict
 import numpy as np
 from nltk.tokenize import word_tokenize
 from gensim.models.doc2vec import TaggedDocument
-import wikipedia as wk
 import time
+import requests
+from parser import Parser
 
-
-class Crawler(object):
+# Given a start URL, crawl Wikipedia pages one by one and feed to HtmlParser
+# @TODO Clean links, decide which to navigate to next.
+class Spider(object):
 
     def __init__(self):
-        self.wiki = wk  # API object for making requests
+        self.parser = Parser()
         self.pages_seen = set()  # Set of already seen documents
         self.queue = list()  # Frontier to explore
         self.docs = list()
@@ -37,18 +39,29 @@ class Crawler(object):
             return
 
         if not start_page:
-            curr = self.queue[0]
+            url = self.queue[0]
             del self.queue[0]
         else:
-            curr = start_page
+            url = start_page
 
-        print(f"Exploring page: {curr}\n")
+        print(f"Exploring page: {url}\n")
 
-        # parse page content
-        self.parse_page(curr)
+        # parse page content and search for links
+        html = self.fetch_html(url)
+        
+        if html:
+            self.parser.feed(html)
+            doc_text = self.parser.mega_string
+            links = self.parser.links
+            # print(doc_text)
+            print(links)
+            self.parser.reset()
+        # html = None
+        # links = self.parse_links(html)
 
+
+        links = []
         # add links to queue
-        links = self.wiki.page(curr).references
         for l in links:
             print(l)
             
@@ -63,11 +76,15 @@ class Crawler(object):
     # 1) Add any new vocab words to the vocab mapping
     # 2) For this document, counts number of occurrences for each vocab word
     # 3) Update co-occurrence matrix
-    def parse_page(self, page_name):
+    def fetch_html(self, url):
 
         # Update the list of TaggedDocuments
         try:
-            pg = self.wiki.page(page_name)
+            res = requests.get(url)
+            if res.status_code == 200:
+                return res.text
+            else:
+                return None
         except Exception:
             return
         

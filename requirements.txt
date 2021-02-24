@@ -1,5 +1,6 @@
-rquests
+requests
 numpy
 gensim
+nltk
 
 

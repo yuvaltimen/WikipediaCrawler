@@ -1,21 +1,15 @@
 from gensim.models.doc2vec import Doc2Vec
-from crawler import Crawler
+from spider import Spider
 import requests
 
 
 
-def main():
-    # crawler = Crawler()
-    #
-    # first_page = 'Wikipedia'
-    # crawler.crawl(first_page)
-    #
-    # tagged = crawler.get_tagged_docs()
-    #
-    # print(dir(tagged))
-    
-    url = 'https://en.wikipedia.org/wiki/Wikipedia'
-    pg = requests.get(url)
+def main():    
+    START_URL = 'https://en.wikipedia.org/wiki/Italian_Renaissance'
+
+    spider = Spider()
+    spider.crawl(START_URL)
+
     
 
 if __name__ == "__main__":

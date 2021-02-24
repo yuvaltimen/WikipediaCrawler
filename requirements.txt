@@ -1,0 +1,5 @@
+rquests
+numpy
+gensim
+
+

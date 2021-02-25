@@ -1,10 +1,11 @@
+import time
+import requests
 from random import shuffle
-from collections import defaultdict
 import numpy as np
 from nltk.tokenize import word_tokenize
 from gensim.models.doc2vec import TaggedDocument
-import time
-import requests
+from document import Document
+
 from parser import Parser
 
 # Given a start URL, crawl Wikipedia pages one by one and feed to HtmlParser
@@ -12,64 +13,63 @@ from parser import Parser
 class Spider(object):
 
     def __init__(self):
-        self.parser = Parser()
-        self.pages_seen = set()  # Set of already seen documents
-        self.queue = list()  # Frontier to explore
-        self.docs = list()
+        self.pages_seen = set()   # Set of already seen documents
+        self.queue = list()       # Frontier to explore
+        self.docs = list()        # List of document objects
         self.log = ""
 
-        # self.vocab = dict()  # Mapping: vocab_word -> index
-        # self.docs = dict()  # Mapping:  doc_name  -> index
-        # self.doc_vecs = dict()  # Mapping:  doc_index -> np.array
 
     # Gets the list of TaggedDocument objects
     def get_tagged_docs(self):
         return self.docs
 
+    # Reorder the queue
     # Checks the queue or randomly procures next page to explore
     # Parses the page's content
-    # Adds links to queue and recurses
-    # Starts at depth=0 and continues until it reaches max_depth
-    def crawl(self, start_page=None, depth=0, max_depth=5000):
+    # Adds links to queue
+    def crawl(self, start_page=None, max_docs=3):
 
         shuffle(self.queue)
+        print(f'Queue size: {len(self.queue)}')
 
         # if depth >= max_depth:
-        if len(self.docs) >= 5:
-            return
+        if len(self.docs) >= max_docs:
+            return self.docs
 
         if not start_page:
             url = self.queue[0]
-            del self.queue[0]
+            del self.queue[0]  # this might be expensive...
         else:
             url = start_page
 
         print(f"Exploring page: {url}\n")
+        self.pages_seen.add(url)
 
         # parse page content and search for links
         html = self.fetch_html(url)
         
         if html:
-            self.parser.feed(html)
-            doc_text = self.parser.mega_string
-            links = self.parser.links
-            # print(doc_text)
-            print(links)
-            self.parser.reset()
-        # html = None
-        # links = self.parse_links(html)
-
-
-        links = []
-        # add links to queue
-        for l in links:
-            print(l)
+            # build parser internal state
+            parser = Parser()
+            parser.feed(html)
             
+            # result is a document object
+            doc = parser.get_document()
             
-        time.sleep(0.2)
-        self.queue.extend(links)
+            # name it with a unique id
+            doc.set_url(url)
+            self.docs.append(doc)
+            
+            print(type(doc))
+            print(f'{len(doc.links)} links found')
+            
+            unexplored_links = set(doc.links).difference(self.pages_seen)
+            print(f'{len(unexplored_links)} new links added to queue')
+            self.queue.extend(unexplored_links)
+            
+            parser.reset()
 
-        self.crawl(depth=depth + 1, max_depth=max_depth)
+        return self.crawl()
 
     # Parses the page's content:
     # 0) First check that we are exploring new content
@@ -78,23 +78,23 @@ class Spider(object):
     # 3) Update co-occurrence matrix
     def fetch_html(self, url):
 
-        # Update the list of TaggedDocuments
         try:
             res = requests.get(url)
             if res.status_code == 200:
                 return res.text
             else:
-                return None
-        except Exception:
-            return
+                print(res.status_code)
+                raise Exception
+        except Exception as e:
+            print(e)
+            
+            
         
-        words = word_tokenize(pg.content)
-        tagDoc = TaggedDocument(words, [pg.pageid])
-        self.docs.append(tagDoc)
 
 
 
-
+if __name__ == '__main__':
+    print('Spider')
 
 
 

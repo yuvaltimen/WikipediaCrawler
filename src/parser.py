@@ -1,23 +1,21 @@
-
-
-    # Parses the page's content:
-    # 0) First check that we are exploring new content
-    # 1) Add any new vocab words to the vocab mapping
-    # 2) For this document, counts number of occurrences for each vocab word
-    # 3) Update co-occurrence matrix
 from html.parser import HTMLParser
+from document import Document
+import re
 
+# Class for parsing HTML content.
+# Subclasses from built-in HTML Parser
 class Parser(HTMLParser):
-
-    def __init__(self) -> None:
+    
+    def __init__(self):
         super().__init__()
-        self.links = []
-        self.is_text = False
-        self.is_content_body = False
-        self.open_div_count = 1
-        self.BODY_CONTENT_ID = 'bodyContent'
-        self.mega_string = ''
-
+        self.is_text = False  # If current iteration is text or not
+        self.is_content_body = False  # If current iteration is the body we are looking for
+        self.open_div_count = 1  # Represents number of open div tags - when it goes to 0 we're done
+        self.BODY_CONTENT_ID = 'bodyContent'  # Represents the bodyContent tag
+        self.prefix = "https://en.wikipedia.org"
+        self.doc = Document()  # A Document datatype
+    
+    # Method called when start tag is encountered
     def handle_starttag(self, tag, attrs):
         if tag == 'div':
             if self.is_content_body:
@@ -27,23 +25,31 @@ class Parser(HTMLParser):
         # If we are reading the content body, look for <p> and <a>
         elif self.is_content_body:
             if tag == 'p':
-                # print('--- FOUND TEXT ---')
+                # --- FOUND TEXT ---
                 self.is_text = True
-            elif tag == 'a' and attrs[0][1][0:6] == '/wiki/':
-                self.links.append(attrs[0][1])
-                return
-        
+            elif tag == 'a':
+                # --- FOUND LINK ---
+                candidate = attrs[0][1]
+                # If it's a wiki link, store the full URL
+                if candidate[:6] == "/wiki/":
+                    candidate = self.prefix + candidate
+                    self.doc.append_link(candidate)
+    
+    # Method called on data in between two tags
     def handle_data(self, data):
         if self.is_text:
-            self.mega_string += f'\n{data}'
-            return
-
+            self.doc.write(data)
+    
+    # Method called when end tag is encountered
     def handle_endtag(self, tag):
         if tag == 'div' and self.is_content_body:
-            print(self.open_div_count)
             self.open_div_count -= 1
             if self.open_div_count == 0:
                 self.is_content_body = False
         elif tag == 'p':
-            # print('--- FOUND TEXT ---')
+            # --- FOUND TEXT ---
             self.is_text = False
+    
+    # Returns a Document object representing a
+    def get_document(self):
+        return self.doc

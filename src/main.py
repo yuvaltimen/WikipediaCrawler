@@ -1,6 +1,5 @@
 from gensim.models.doc2vec import Doc2Vec
 from spider import Spider
-import requests
 
 
 
@@ -9,6 +8,7 @@ def main():
 
     spider = Spider()
     spider.crawl(START_URL)
+    
 
     
 

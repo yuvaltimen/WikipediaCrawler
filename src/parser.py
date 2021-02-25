@@ -1,6 +1,6 @@
 from html.parser import HTMLParser
+from utils import clean_data
 from document import Document
-import re
 
 # Class for parsing HTML content.
 # Subclasses from built-in HTML Parser
@@ -38,7 +38,7 @@ class Parser(HTMLParser):
     # Method called on data in between two tags
     def handle_data(self, data):
         if self.is_text:
-            self.doc.write(data)
+            self.doc.write(clean_data(data))
     
     # Method called when end tag is encountered
     def handle_endtag(self, tag):

@@ -1,27 +1,19 @@
-import time
 import requests
 from random import shuffle
-import numpy as np
-from nltk.tokenize import word_tokenize
-from gensim.models.doc2vec import TaggedDocument
-from document import Document
-
 from parser import Parser
 
-# Given a start URL, crawl Wikipedia pages one by one and feed to HtmlParser
-# @TODO Clean links, decide which to navigate to next.
+
 class Spider(object):
 
     def __init__(self):
         self.pages_seen = set()   # Set of already seen documents
         self.queue = list()       # Frontier to explore
         self.docs = list()        # List of document objects
+        self.doc_manager = None
         self.log = ""
 
-
-    # Gets the list of TaggedDocument objects
-    def get_tagged_docs(self):
-        return self.docs
+    def set_doc_manager(self, doc_man):
+        self.doc_manager = doc_man
 
     # Reorder the queue
     # Checks the queue or randomly procures next page to explore
@@ -34,6 +26,7 @@ class Spider(object):
 
         # if depth >= max_depth:
         if len(self.docs) >= max_docs:
+            self.doc_manager.save_cache(self.pages_seen, self.queue)
             return self.docs
 
         if not start_page:
@@ -60,14 +53,16 @@ class Spider(object):
             doc.set_url(url)
             self.docs.append(doc)
             
-            print(type(doc))
-            print(f'{len(doc.links)} links found')
-            
+            # sdd any new links
             unexplored_links = set(doc.links).difference(self.pages_seen)
-            print(f'{len(unexplored_links)} new links added to queue')
             self.queue.extend(unexplored_links)
             
+            # Save the file
+            if self.doc_manager:
+                self.doc_manager.save_doc(doc)
+
             parser.reset()
+            
 
         return self.crawl()
 
@@ -87,8 +82,6 @@ class Spider(object):
                 raise Exception
         except Exception as e:
             print(e)
-            
-            
         
 
 

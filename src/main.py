@@ -13,14 +13,13 @@ from document import Document
 def main():
     
     BASE_FOLDER = '/Users/yuvaltimen/Coding/wiki_crawler/'  # The folder to store the data
-    START_URL = 'https://en.wikipedia.org/wiki/Italian_Renaissance'  # First Wiki article to explore
 
     doc_manager = DocumentManager(BASE_FOLDER)
     
     spider = Spider()
     spider.set_doc_manager(doc_manager)
 
-    documents = spider.crawl(START_URL, max_docs=3)
+    documents = spider.crawl()
     
     print(len(documents))
 

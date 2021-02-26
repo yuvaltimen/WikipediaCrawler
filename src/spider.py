@@ -1,5 +1,5 @@
 import requests
-from random import shuffle
+from random import shuffle, random
 from parser import Parser
 
 
@@ -10,10 +10,18 @@ class Spider(object):
         self.queue = list()       # Frontier to explore
         self.docs = list()        # List of document objects
         self.doc_manager = None
-        self.log = ""
+        self.random_url = "https://en.wikipedia.org/wiki/Special:Random"
 
+    # Sets the document manager for this crawler and load in cached files if they exist
     def set_doc_manager(self, doc_man):
         self.doc_manager = doc_man
+        
+        # Now that our doc manager is set, we load in the queue and seen
+        q, s = self.doc_manager.get_queue_and_seen()
+        
+        if q and s:
+            self.queue = q
+            self.pages_seen = s
 
     # Reorder the queue
     # Checks the queue or randomly procures next page to explore
@@ -30,16 +38,21 @@ class Spider(object):
             return self.docs
 
         if not start_page:
-            url = self.queue[0]
-            del self.queue[0]  # this might be expensive...
+            # Pick either a random page or one from the queue
+            if random() < 0.01:
+                url = self.queue[0]
+                del self.queue[0]  # this might be expensive...
+            else:
+                url = self.random_url
+                print('hit_random')
         else:
             url = start_page
 
-        print(f"Exploring page: {url}\n")
-        self.pages_seen.add(url)
-
+        
         # parse page content and search for links
-        html = self.fetch_html(url)
+        url, html = self.fetch_html(url)
+        self.pages_seen.add(url)
+        print(f"Exploring page: {url}\n")
         
         if html:
             # build parser internal state
@@ -76,7 +89,7 @@ class Spider(object):
         try:
             res = requests.get(url)
             if res.status_code == 200:
-                return res.text
+                return res.url, res.text
             else:
                 print(res.status_code)
                 raise Exception
@@ -89,58 +102,4 @@ class Spider(object):
 if __name__ == '__main__':
     print('Spider')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        # # If we've been here before, continue on
-        # if page_name in self.pages_seen:
-        #     return
-        #
-        # # Mark as seen
-        # self.pages_seen.add(page_name)
-        #
-        # #  new doc name     ->  new idx
-        # self.docs[page_name] = len(self.docs)
-        # doc_idx = self.docs[page_name]
-        #
-        # # Check for new vocab words
-        # content = self.wiki.page(page_name).content
-        # all_words = word_tokenize(content)
-        # uniques = set(all_words)
-        #
-        # # Add new words to the mapping
-        # for u in uniques:
-        #     if u not in self.vocab.keys():
-        #         #    new word ->   new idx
-        #         self.vocab[u] = len(self.vocab)
-        #
-        # doc_vec = defaultdict(int)
-        #
-        # # Create this document's BOW word vector
-        # for wrd in all_words:
-        #     # get the word's index
-        #     wrd_idx = self.vocab[wrd]
-        #     # update the document's vector
-        #     doc_vec[wrd_idx] += 1
-        #
-        # # Store the doc vec
-        # print(f"Length of the document vector: {len(doc_vec)}")
-        # print(f"Size of the vocabulary: {len(self.vocab)}")
-        # self.doc_vecs[doc_idx] = np.array(doc_vec.values())
 

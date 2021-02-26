@@ -1,6 +1,6 @@
 import re
 from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
+from nltk.stem import PorterStemmer
 
 # Clean data function
 # Makes sure word is valid English forming (ie. only alphanumeric)
@@ -8,7 +8,7 @@ from nltk.stem import WordNetLemmatizer
 def clean_data(txt):
     
     regex_word = re.compile(r'\b[a-zA-Z]+?\b')
-    lemma = WordNetLemmatizer()
+    stemmer = PorterStemmer()
     
     out = ""
     
@@ -17,13 +17,16 @@ def clean_data(txt):
         # If it is a valid word
         if regex_word.search(tok):
             
-            # 1. to lowercase
+            # 1. Remove any bad chars
+            tok = re.sub(r'[^a-zA-Z]', '', tok)
+            
+            # 2. to lowercase
             tok = tok.lower()
             
-            # 2. lemmatize
-            tok = lemma.lemmatize(tok)
+            # 3. lemmatize
+            tok = stemmer.stem(tok)
             
-            out += f" {tok}"
+            out += f"{tok} "
         
     return out
     

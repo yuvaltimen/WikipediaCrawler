@@ -28,6 +28,11 @@ class Spider(object):
     # Parses the page's content
     # Adds links to queue
     def crawl(self, start_page=None, max_docs=3):
+        
+        if not self.doc_manager:
+            raise Exception("This class contains no DocumentManager. "
+                            "To set a DocumentManager, call this class' `.set_doc_manager()` "
+                            "method and supply a DocumentManager with the folder to which the data will be downloaded.")
 
         shuffle(self.queue)
         print(f'Queue size: {len(self.queue)}')
@@ -71,8 +76,7 @@ class Spider(object):
             self.queue.extend(unexplored_links)
             
             # Save the file
-            if self.doc_manager:
-                self.doc_manager.save_doc(doc)
+            self.doc_manager.save_doc(doc)
 
             parser.reset()
             

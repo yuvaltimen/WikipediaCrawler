@@ -1,2 +1,4 @@
-src__pycache__/*
+src__pycache__/
+.idea/
+
 

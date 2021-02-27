@@ -4,14 +4,14 @@ import json
 from nltk.tokenize import word_tokenize
 
 
-# # Object for managing data downloading to local file storage.
-#
-# # BASE_FOLDER - supplied by user as the location to store the data
-# # wiki_data   - folder containing data
-# # cache       - cache of URLs already seen and the saved Queue
-# # content     - folder containing plaintext data. Each file is named as its corresponding short-URL
-# # meta        - metadata about the document, such as the full URL and a list of statistics like n-gram counts
-#
+# Object for managing data downloading to local file storage.
+
+# BASE_FOLDER - supplied by user as the location to store the data
+# wiki_data   - folder containing data
+# cache       - cache of URLs already seen and the saved Queue
+# content     - folder containing plaintext data. Each file is named as its corresponding short-URL
+# meta        - metadata about the document, such as the full URL and a list of statistics like n-gram counts
+
 # [BASE_FOLDER, ie. Desktop/]
 #    └ wiki_data/
 #        │
@@ -43,15 +43,13 @@ class DocumentManager(object):
         self.content = self.full_dir + 'content/'
         self.meta = self.full_dir + 'meta/'
         
-        self.assert_exists()
+        self.create_data_folders()
         
-    # Checks that the folders and files exists.
-    # If they do, return the queue and seen as Python lists, else return None's
-    def assert_exists(self):
-        
+    # Checks that the folders exist
+    def create_data_folders(self):
         # Make sure base folder exists
         if not os.path.exists(self.base_dir):
-            raise Exception('Invalid base dir: ' + self.base_dir)
+            raise Exception('Invalid base directory: ' + self.base_dir)
 
         # Create the wiki_data folder if necessary
         if not os.path.exists(self.full_dir):
@@ -68,47 +66,48 @@ class DocumentManager(object):
         # Create the meta folder if necessary
         if not os.path.exists(self.meta):
             os.makedirs(self.meta)
-            
-        # Check for cached files
-        return os.path.exists(self.content) and os.path.exists(self.meta)
-                
-    def get_queue_and_seen(self):
+
+    # Check if the cached files exist
+    def is_cached_data(self):
+        return os.path.exists(self.seen) and os.path.exists(self.queue)
         
-        # Assert that the folder structure is correct
-        q, s = None, None
+    # Returns the cached seen and queue data as Python lists
+    def get_cached_data(self):
+        q = list()
+        s = set()
         
         # If the cached files exist, retrieve them
-        if self.assert_exists():
+        if self.is_cached_data():
             
+            # Append each URL string from the csv file to the list
             with open(self.queue, newline='') as q_f:
                 reader = csv.reader(q_f)
-                q = list()
                 for row in reader:
                     q.append(row[0])
                 print(q[:3])
         
+            # Add each URL string from the csv file to the set
             with open(self.seen, newline='') as s_f:
                 reader = csv.reader(s_f)
-                s = set()
                 for row in reader:
                     s.add(row[0])
                 print(s)
 
         return q, s
         
-    # Saves a given document to the file
+    # Saves a given document to file
     def save_doc(self, doc):
-        # Short-URL
         short_url = doc.url.split('/')[-1]
         
-        # save the content
+        # Save the content
         with open(f'{self.content}{short_url}.txt', 'w+') as cont:
             cont.write(doc.content)
             
-        # save the metadata
+        # Save the metadata
         with open(f'{self.meta}{short_url}.json', 'w+') as met:
             json.dump(self.doc_to_meta(doc), met)
             
+    # Saves the queue and set of seen URLs to file
     def save_cache(self, seen, queue):
         with open(self.seen, 'w+') as new_seen:
             for url in seen:
@@ -142,7 +141,6 @@ class DocumentManager(object):
         trigrams = dict()
     
         # Use a single pass to generate counts for 1, 2, and 3-grams
-    
         for idx, word in enumerate(tokens):
         
             if idx == len(tokens) - 2:
@@ -175,6 +173,5 @@ class DocumentManager(object):
                 'bigram_counts': bigrams,
                 'trigram_counts': trigrams}
     
-        # Returns the string JSON
         return meta
         

@@ -2,12 +2,12 @@ import re
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 
-# Clean data function
-# Makes sure word is valid English forming (ie. only alphanumeric)
-# Makes lowercase and lemmatizes
+# Scrubs text clean
 def clean_data(txt):
     
+    # Only alphabetical words
     regex_word = re.compile(r'\b[a-zA-Z]+?\b')
+    # Stem words to reduce vocab size
     stemmer = PorterStemmer()
     
     out = ""
@@ -26,7 +26,8 @@ def clean_data(txt):
             # 3. lemmatize
             tok = stemmer.stem(tok)
             
-            out += f"{tok} "
-        
+            if len(tok) < 3:
+                out += f"{tok} "
+
     return out
     

@@ -1,10 +1,8 @@
-from gensim.models.doc2vec import Doc2Vec
 from spider import Spider
 from document_manager import DocumentManager
-
-
 import numpy as np
-from nltk.tokenize import word_tokenize
+from gensim.models.doc2vec import Doc2Vec
+
 from gensim.models.doc2vec import TaggedDocument
 from document import Document
 

@@ -2,18 +2,18 @@ from html.parser import HTMLParser
 from utils import clean_data
 from document import Document
 
-# Class for parsing HTML content.
-# Subclasses from built-in HTML Parser
+# Class for parsing HTML content
+# Subclasses from built-in Python HTMLParser
 class Parser(HTMLParser):
     
     def __init__(self):
         super().__init__()
         self.is_text = False  # If current iteration is text or not
         self.is_content_body = False  # If current iteration is the body we are looking for
-        self.open_div_count = 1  # Represents number of open div tags - when it goes to 0 we're done
+        self.open_div_count = 1  # Represents number of open div tags since reaching the bodyContent
         self.BODY_CONTENT_ID = 'bodyContent'  # Represents the bodyContent tag
         self.prefix = "https://en.wikipedia.org"
-        self.doc = Document()  # A Document datatype
+        self.doc = Document()
     
     # Method called when start tag is encountered
     def handle_starttag(self, tag, attrs):

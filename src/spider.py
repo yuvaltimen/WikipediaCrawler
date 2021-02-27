@@ -17,7 +17,7 @@ class Spider(object):
         self.doc_manager = doc_man
         
         # Now that our doc manager is set, we load in the queue and seen
-        q, s = self.doc_manager.get_queue_and_seen()
+        q, s = self.doc_manager.get_cached_data()
         
         if q and s:
             self.queue = q

@@ -26,7 +26,7 @@ def clean_data(txt):
             # 3. lemmatize
             tok = stemmer.stem(tok)
             
-            if len(tok) < 3:
+            if len(tok) >= 3:
                 out += f"{tok} "
 
     return out

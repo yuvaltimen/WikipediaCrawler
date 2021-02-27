@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+from document import Document
 from nltk.tokenize import word_tokenize
 
 
@@ -34,7 +35,7 @@ from nltk.tokenize import word_tokenize
 
 class DocumentManager(object):
 
-    def __init__(self, base_dir):
+    def __init__(self, base_dir: str) -> None:
         self.base_dir = base_dir
         self.full_dir = self.base_dir + 'wiki_dir/'
         self.cache = self.full_dir + 'cache/'
@@ -45,8 +46,8 @@ class DocumentManager(object):
         
         self.create_data_folders()
         
-    # Checks that the folders exist
-    def create_data_folders(self):
+    # Creates the sub-folders if they do not already exist
+    def create_data_folders(self) -> None:
         # Make sure base folder exists
         if not os.path.exists(self.base_dir):
             raise Exception('Invalid base directory: ' + self.base_dir)
@@ -67,12 +68,13 @@ class DocumentManager(object):
         if not os.path.exists(self.meta):
             os.makedirs(self.meta)
 
-    # Check if the cached files exist
-    def is_cached_data(self):
+    # Determines if cached files exist
+    # True if both queue and seen exist in the cache
+    def is_cached_data(self) -> bool:
         return os.path.exists(self.seen) and os.path.exists(self.queue)
         
-    # Returns the cached seen and queue data as Python lists
-    def get_cached_data(self):
+    # Returns the cached seen and queue data
+    def get_cached_data(self) -> tuple:
         q = list()
         s = set()
         
@@ -83,7 +85,7 @@ class DocumentManager(object):
             with open(self.queue, newline='') as q_f:
                 reader = csv.reader(q_f)
                 for row in reader:
-                    q.append(row[0])
+                    q.append(''.join(row))
                 print(q[:3])
         
             # Add each URL string from the csv file to the set
@@ -96,7 +98,7 @@ class DocumentManager(object):
         return q, s
         
     # Saves a given document to file
-    def save_doc(self, doc):
+    def save_doc(self, doc: Document) -> None:
         short_url = doc.url.split('/')[-1]
         
         # Save the content
@@ -108,7 +110,7 @@ class DocumentManager(object):
             json.dump(self.doc_to_meta(doc), met)
             
     # Saves the queue and set of seen URLs to file
-    def save_cache(self, seen, queue):
+    def save_cache(self, seen: set, queue: list) -> None:
         with open(self.seen, 'w+') as new_seen:
             for url in seen:
                 new_seen.write(url + '\n')
@@ -117,19 +119,22 @@ class DocumentManager(object):
             for url in queue:
                 new_queue.write(url + '\n')
 
-    # Convert a document to a metadata json object
-    # { url: str,
-    #   links: list,
-    #   unigram_counts: dict(word -> count),
-    #   bigram_counts: dict(w1, w2 -> count),
-    #   trigram_counts: dict(w1, w2, w3 -> count) }
-    def doc_to_meta(self, doc):
+    # Convert a document to a metadata json object with the following structure:
+    """
+    { url:             str,
+      links:           list,
+      unigram_counts:  dict(word -> count),
+      bigram_counts:   dict(w1, w2 -> count),
+      trigram_counts:  dict(w1, w2, w3 -> count) }
+      """
+    def doc_to_meta(self, doc: Document) -> dict:
         # Get a list of words from the content
         tokens = word_tokenize(doc.content)
     
         # Check that we can create trigrams
-        if len(tokens) < 3:
-            return None
+        # Must be at least 6 for gensim model's window size of 5
+        if len(tokens) < 6:
+            return dict()
     
         # Count unigrams: w1
         unigrams = dict()

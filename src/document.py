@@ -9,7 +9,7 @@ class Document(object):
         
     # Append plaintext to document content
     def write(self, content):
-        self.content += f"{content} "
+        self.content += f" {content}"
     
     # Set the unique identifying URL for this document
     def set_url(self, url):

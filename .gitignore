@@ -1,4 +1,7 @@
 src__pycache__/
 .idea/
+.ipynb_checkpoints/
+*.ipynb
+wiki_dir/
 
 

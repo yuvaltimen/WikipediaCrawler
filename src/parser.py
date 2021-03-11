@@ -8,13 +8,21 @@ class Parser(HTMLParser):
     
     def __init__(self):
         super().__init__()
-        self.auto_clean = False  # If to use automatic cleaning on the text data
+        self.init_data()
+        
+    def init_data(self):
+        self.auto_clean = True  # If to use automatic cleaning on the text data
         self.is_text = False  # If current iteration is text or not
         self.is_content_body = False  # If current iteration is the body we are looking for
         self.open_div_count = 1  # Represents number of open div tags since reaching the bodyContent
         self.BODY_CONTENT_ID = 'bodyContent'  # Represents the bodyContent tag
         self.prefix = "https://en.wikipedia.org"
         self.doc = Document()
+        
+    # Method to clear the Parser
+    def reset(self):
+        super().reset()
+        self.init_data()
     
     # Method called when start tag is encountered
     def handle_starttag(self, tag, attrs):
@@ -50,7 +58,8 @@ class Parser(HTMLParser):
         if self.is_text:
             if self.auto_clean:
                 data = clean_data(data)
-            
+
+            print(data)
             self.doc.write(data)
     
     # Method called when end tag is encountered

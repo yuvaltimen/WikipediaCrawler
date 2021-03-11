@@ -1,4 +1,5 @@
-src__pycache__/
+src/__pycache__/
+src/gensim_model
 .idea/
 .ipynb_checkpoints/
 *.ipynb

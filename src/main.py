@@ -1,10 +1,6 @@
 import sys
 from spider import Spider
 from document_manager import DocumentManager
-from gensim.models.doc2vec import Doc2Vec, TaggedDocument
-
-
-
 
 # Builder for a crawler
 # Links up a DocumentManager pointed to the provided base directory
@@ -37,7 +33,7 @@ def main():
 
     spider = build_crawler(base)
 
-    documents = spider.crawl(start_page=start_page, max_docs=50)
+    documents = spider.crawl(start_page=start_page, max_docs=100)
 
     print(f"Found {len(documents)} articles")
     

@@ -51,6 +51,10 @@ class Spider(object):
                 # Make the request, return the true URL and HTML
                 true_url, html = self.fetch_html(url)  # fetch_html might return an altered URL so we need `true_url`
                 
+                # Check that we haven't seen this page before
+                if true_url in self.pages_seen:
+                    continue
+                
                 # Add both URLs since we may encounter either from the queue
                 self.pages_seen.add(url)
                 self.pages_seen.add(true_url)
@@ -83,15 +87,12 @@ class Spider(object):
                     else:
                         url = self.random_url
                         
-            except BaseException as be:
-                
+            except BaseException as be:  # KeyboardInterrupt inherits from BaseException so as not to catch from Exception
                 self.doc_manager.save_cache(self.pages_seen, self.queue)
                 return self.docs
                 
-
         # Save the queue and seen to cache
         self.doc_manager.save_cache(self.pages_seen, self.queue)
-        
         return self.docs
 
 

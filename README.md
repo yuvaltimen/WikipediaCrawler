@@ -2,6 +2,15 @@
 
 Using Python's `requests` library, this module allows for Wikipedia crawling and data download.
 
+# How to Use
+
+To crawl Wikipedia pages, use the following command:
+
+`python3 main.py <path-to-base-directory>`
+
+Where <path-to-base-directory> is the directory where the `wiki_dir` folder will be created. 
+The default start-page is the Library of Congress Control Number.
+
 # Module Overview
 `spider.py` - This module contains the Spider class, which is the crawler. Before calling crawler.crawl(), you must 
 supply a DocumentManager by calling the crawler.set_doc_manager() method with an existing DocumentManager instance. 
